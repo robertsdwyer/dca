@@ -9,6 +9,32 @@ class Sequence:
             self.raw_fasta = self.parse_input()
             self.parse_fasta()
             
+        def write_fasta(self, filename):
+            #check whether filename exists
+            exists = os.path.exists(filename)
+            if exists:
+                raise ValueError(filename + ' already exists')
+            else:
+                #create fasta string
+                fasta_string = self.seq_to_string()
+                #write fasta
+                f = open(filename, 'w')
+                f.write(fasta_string)
+                f.close()
+
+        def seq_to_string(self):
+            #determine how many iterations to loop for linebreaks
+            iterations = self.length()/70
+            if self.length()%70 > 0:
+                iterations += 1
+            #loop through sequence adding linebreaks
+            fasta_chunked = []
+            for i in range(iterations):
+                seq_chunk = self.fasta.seq[(i*70):((i+1)*70)]
+                fasta_chunked.append(seq_chunk)
+            fasta_string = '\n'.join([self.fasta.header] + fasta_chunked)
+            return fasta_string
+                
         def parse_fasta(self):
             #define fasta alphabet
             fasta_alphabet = ['A','C','D','E','F','G','H','I','K','L','M','N',

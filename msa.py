@@ -1,16 +1,24 @@
 import subprocess
 import os
+from sequence import Sequence
 
 class Msa:
     
     def __init__(self,sequence):
         # check that sequence is of type Sequence
-        if not sequence.__class__.__name__ == 'Sequence':
-            raise ValueError("Msa class must be initiated with a sequence of type 'Sequence'")
+        if sequence.__class__.__name__ == 'Sequence':
+            self.msa = self.get_msa()
         else:
-            self.sequence = sequence
-        self.msa = self.get_msa()
-        
+            # check for known extension
+            extension = sequence[-4:]
+            if extension == '.fas':
+                self.msa = self.load_msa(sequence)
+                self.check_msa(self.msa)
+            elif extension == '.a3m':
+                self.msa = self.load_msa(sequence)
+            else:
+                raise ValueError("Msa class must be initiated with an existing MSA or a sequence of type 'Sequence'")
+            
     def get_msa(self):
         # create new msa filename
         msa_path = '/Users/hannahhartig/Documents/dca/lib/msas'
@@ -56,9 +64,13 @@ class Msa:
             reformat_command = 'reformat.pl a3m fas ' + msa_filename + ' ' + msa_filename_fas
             subprocess.check_output(reformat_command)
             #load msa fas
-            self.msa.fas = self.load_msa(msa_filename_fas)
-            
-    def load_msa(self, filename):
+            self.msa = self.load_msa(msa_filename_fas)
+ 
+    @staticmethod   
+    def load_msa(filename):
+        # check whether filenam is str
+        if not type(filename) == str:
+            raise ValueError('Argument filename must be of type str')
         #check whether filename exists
         file_path = '/Users/hannahhartig/Documents/dca/lib/msas'
         if file_path not in filename:
@@ -69,3 +81,31 @@ class Msa:
             with open(filename,'r') as f:
                     msa = f.read()
         return msa
+        
+    @staticmethod
+    def check_msa(msa_string):
+        #check that msa is an msa
+        if not type(msa_string) == str:
+            raise ValueError('Argument msa_string must be of type string')
+        elif '>' not in msa_string:
+            raise ValueError('Argument msa_string must be fasta format containing character >')
+        elif msa_string.count('>') <= 1:
+            raise ValueError('Argument msa_string must contain multiple sequences delimited by >')
+        msa_split = msa_string.split('>')
+        # check that all msa elements are valid sequences of the same length
+        ln_last = 0
+        for seq in msa_split:
+            seq = '>' + seq
+            seq = Sequence(seq)
+            if ln_last == 0:
+                ln_last = seq.length()
+            else:
+                if ln_last != seq.length():
+                    raise ValueError('Argument msa_string must have sequences of equal lengths')   
+        return True
+        
+    def dca(self):
+        
+        
+        
+

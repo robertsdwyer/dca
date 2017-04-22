@@ -55,6 +55,8 @@ class Sequence:
                     self.seq = ''.join(fasta_lines[1:])
                     #convert all to uppercase
                     self.seq = self.seq.upper()
+                    if ('X' in self.seq):
+                        self.seq = self.seq.replace('X','-')
                     for aa in self.seq:
                         if aa not in fasta_alphabet:
                             raise ValueError(' '.join([

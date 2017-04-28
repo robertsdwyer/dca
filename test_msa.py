@@ -1,5 +1,6 @@
 import unittest
 from msa import Msa
+import numpy as np
 
 class TestMsaMethods(unittest.TestCase):
     
@@ -45,20 +46,23 @@ M------LP---------------------L----------------------Y-----------K--------------
 -------------P------------------------------------------------------------------------------------M-
 -----L-------TM---RE------AFSF--------AMRL-LIAFG----VVFE-LPLVIF-F-LARLGLVN-AAWL-R-------------------
 -------K---KR-KYAIL-IAFILS-A-L-L--T--Pp-DM--V--TQ------SFMAG--P-LALLYE----LSIWVAA--VFGK'''
-        self.assertTrue(Msa.check_msa(msa_example))
-        msa = Msa.load_msa(msa_filename_fileinitfas)
-        self.assertTrue(Msa.check_msa(msa))
+        msa, header = Msa.parse_msa(msa_example)
+        self.assertEqual(np.shape(msa)[0], 2)
+        self.assertEqual(np.shape(msa)[1], 1387)
+        self.assertEqual(len(header), 2)
+        self.assertEqual(msa[0, 0], 'G')
+        self.assertEqual(header[0][0:5], '>4HTS')
         with self.assertRaises(ValueError):
-            Msa.check_msa(3)
-            Msa.check_msa(msa_example.split('>')[0])
-            Msa.check_msa('>' + '/n'.join(msa_example.split('>')))
-            Msa.check_msa('>' + '/n>'.join([msa_example.split('>')[0], msa_example.split('>')[1][0:-1]]))
+            Msa.parse_msa(3)
+            Msa.parse_msa(msa_example.split('>')[0])
+            Msa.parse_msa('>' + '/n'.join(msa_example.split('>')))
+            Msa.parse_msa('>' + '/n>'.join([msa_example.split('>')[0], msa_example.split('>')[1][0:-1]]))
             
     def test_msa(self):
         msa_filename_fileinitfas = '5296874.full.fas'
         msa = Msa(msa_filename_fileinitfas)
         #check that msa is loaded properly from filename
-        self.assertEqual(msa.msa[0:5], '>4HTS')
+        self.assertEqual(msa.msa[0, 0], 'G')
         
 if __name__ == '__main__':
     unittest.main()

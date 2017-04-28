@@ -82,7 +82,7 @@ class Sequence:
             #instantiate nucleator_filename
             nucleator_filename = False
             #set relative path to nucleator lib
-            nucleator_path = 'lib/nucleators/'
+            nucleator_path = '/Users/hannahhartig/Documents/dca/lib/nucleators/'
             #obtain list of files in nucleator_path directory
             nucleator_files = os.listdir(nucleator_path)
             #check whether inp in nucleator_files

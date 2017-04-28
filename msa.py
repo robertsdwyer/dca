@@ -1,6 +1,7 @@
 import subprocess
 import os
 from sequence import Sequence
+import numpy as np
 
 class Msa:
     
@@ -12,8 +13,8 @@ class Msa:
             # check for known extension
             extension = sequence[-4:]
             if extension == '.fas':
-                self.msa = self.load_msa(sequence)
-                self.check_msa(self.msa)
+                msa_str = self.load_msa(sequence)
+                self.msa, self.header = self.parse_msa(msa_str)
             elif extension == '.a3m':
                 self.msa = self.load_msa(sequence)
             else:
@@ -65,6 +66,7 @@ class Msa:
             subprocess.check_output(reformat_command)
             #load msa fas
             self.msa = self.load_msa(msa_filename_fas)
+            
  
     @staticmethod   
     def load_msa(filename):
@@ -81,30 +83,42 @@ class Msa:
             with open(filename,'r') as f:
                     msa = f.read()
         return msa
-        
+    
     @staticmethod
-    def check_msa(msa_string):
+    def parse_msa(msa_str):
         #check that msa is an msa
-        if not type(msa_string) == str:
+        if not type(msa_str) == str:
             raise ValueError('Argument msa_string must be of type string')
-        elif '>' not in msa_string:
+        elif '>' not in msa_str:
             raise ValueError('Argument msa_string must be fasta format containing character >')
-        elif msa_string.count('>') <= 1:
+        elif msa_str.count('>') <= 1:
             raise ValueError('Argument msa_string must contain multiple sequences delimited by >')
-        msa_split = msa_string.split('>')
+        msa_split = msa_str.split('>')
         # check that all msa elements are valid sequences of the same length
         ln_last = 0
-        for seq in msa_split:
+        seq_list = []
+        header_list = []
+        for seq in msa_split[1:]:
             seq = '>' + seq
             seq = Sequence(seq)
             if ln_last == 0:
                 ln_last = seq.length()
             else:
                 if ln_last != seq.length():
-                    raise ValueError('Argument msa_string must have sequences of equal lengths')   
-        return True
+                    raise ValueError('Argument msa_string must have sequences of equal lengths')
+            seq_list.append(list(seq.fasta.seq))
+            header_list.append(seq.fasta.header)
+        msa = np.array(seq_list)
+        header = list(header_list)
+        return msa, header
         
-    def dca(self):
+    def depth(self):
+        depth = np.shape(self.msa)[0]
+        return depth
+        
+    def length(self):
+        length = np.shape(self.msa)[1]
+        return length
         
         
         
